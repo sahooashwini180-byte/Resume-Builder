@@ -55,10 +55,12 @@ export default function ResumeForm({ data, setData }) {
   // Download Resume PDF
 const handleDownload = async (id) => {
   if (!id) return alert("Resume not saved yet!");
+  if (!data.name || !data.dob) return alert("Fill Name and DOB!");
+  alert(`PDF Password = ${data.name.replace(/\s+/g, '')}-${data.dob}`);
 
   try {
     const response = await axios.get(
-      `https://resume-builder-c1tz.onrender.com/api/resumes/download/${id}`,
+      `https://resume-builder-c1tz.onrender.com/api/resumes/download/${id}?name=${encodeURIComponent(data.name)}&dob=${encodeURIComponent(data.dob)}`,
       { responseType: "blob" }
     );
 
@@ -68,11 +70,9 @@ const handleDownload = async (id) => {
     link.setAttribute("download", `resume-${id}.pdf`);
     document.body.appendChild(link);
     link.click();
-    link.remove();
-    alert("Download completed successfully!");
-  } catch (error) {
-    console.error("Error downloading PDF:", error);
-    alert("Failed to download PDF.");
+  } catch (err) {
+    console.error("Error downloading PDF:", err);
+    alert("Download failed");
   }
 };
   return (
@@ -102,6 +102,7 @@ const handleDownload = async (id) => {
           onChange={(e) => setData({ ...data, phone: e.target.value })}
           className="p-3 border rounded shadow-sm"
         />
+        
         <input
           type="text"
           placeholder="LinkedIn / GitHub"
@@ -118,6 +119,12 @@ const handleDownload = async (id) => {
         onChange={(e) => setData({ ...data, summary: e.target.value })}
         className="w-full p-3 border rounded shadow-sm"
       />
+      <input
+  type="date"
+  placeholder="Date of Birth"
+  value={data.dob}
+  onChange={(e) => setData({ ...data, dob: e.target.value })}
+/>
 
       {/* Skills */}
       <div>
