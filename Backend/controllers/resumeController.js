@@ -133,6 +133,9 @@ export const downloadResume = async (req, res) => {
           return res.status(500).send("Encryption failed");
         }
 
+         await Resume.findByIdAndUpdate(id, {
+      $inc: { downloads: 1 }
+    });
         const file = fs.readFileSync(protectedPath);
 
         res.set({
