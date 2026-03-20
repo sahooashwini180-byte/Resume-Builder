@@ -58,7 +58,7 @@ export const downloadResume = async (req, res) => {
     const safeName = name.replace(/\s+/g, '');
     const password = `${safeName}-${dob}`;
 
-    // ✅ HTML TEMPLATE (THIS WILL RENDER PROPERLY)
+    // HTML template
     const html = `
       <html>
       <head>
@@ -110,45 +110,40 @@ export const downloadResume = async (req, res) => {
       </html>
     `;
 
-    // ✅ Launch browser
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
+    // Launch puppeteer (Render-safe way)
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      headless: true,
+    });
 
+    const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "domcontentloaded" });
 
-    const filePath = `resume-${id}.pdf`;
-    const protectedPath = `protected-${id}.pdf`;
-
-    // ✅ Generate PDF
-    await page.pdf({ path: filePath, format: "A4" });
-
+    const pdfBuffer = await page.pdf({ format: "A4" });
     await browser.close();
 
-    // ✅ Encrypt using qpdf
-    exec(
-      `qpdf --encrypt "${password}" "${password}" 256 -- "${filePath}" "${protectedPath}"`,
-      (err) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).send("Encryption failed");
-        }
+    // 🔐 Apply password using pdf-lib
+    const pdfDoc = await PDFDocument.load(pdfBuffer);
 
-        const file = fs.readFileSync(protectedPath);
+    const protectedPdfBytes = await pdfDoc.save({
+      userPassword: password,
+      ownerPassword: password,
+    });
 
-        res.set({
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `attachment; filename=resume-${id}.pdf`
-        });
+    // ✅ Increase download count
+    await Resume.findByIdAndUpdate(id, {
+      $inc: { downloads: 1 }
+    });
 
-        res.send(file);
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename=resume-${id}.pdf`
+    });
 
-        fs.unlinkSync(filePath);
-        fs.unlinkSync(protectedPath);
-      }
-    );
+    res.send(Buffer.from(protectedPdfBytes));
 
   } catch (err) {
-    console.error(err);
+    console.error("DOWNLOAD ERROR:", err);
     res.status(500).json({ message: "Error", error: err.message });
   }
 };
