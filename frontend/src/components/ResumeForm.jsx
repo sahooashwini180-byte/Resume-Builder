@@ -42,7 +42,7 @@ export default function ResumeForm({ data, setData }) {
   // Submit Resume
   const handleSubmit = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/resumes", data);
+      const res = await axios.post("https://resume-builder-c1tz.onrender.com/api/resumes", data);
       alert("Resume saved successfully!");
       setSavedResumeId(res.data._id); // save MongoDB _id for download
       console.log("Saved resume:", res.data);
@@ -58,7 +58,7 @@ const handleDownload = async (id) => {
 
   try {
     const response = await axios.get(
-      `http://localhost:5000/api/resumes/download/${id}`,
+      `https://resume-builder-c1tz.onrender.com/api/resumes/download/${id}`,
       { responseType: "blob" }
     );
 
