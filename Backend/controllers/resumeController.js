@@ -125,32 +125,27 @@ export const downloadResume = async (req, res) => {
     await browser.close();
 
     // ✅ Encrypt using qpdf
-exec(
-  `qpdf --encrypt "${password}" "${password}" 256 -- "${filePath}" "${protectedPath}"`,
-  async (err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Encryption failed");
-    }
+    exec(
+      `qpdf --encrypt "${password}" "${password}" 256 -- "${filePath}" "${protectedPath}"`,
+      (err) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).send("Encryption failed");
+        }
 
-    // ✅ NOW THIS WILL WORK
-    await Resume.findByIdAndUpdate(id, {
-      $inc: { downloads: 1 }
-    });
+        const file = fs.readFileSync(protectedPath);
 
-    const file = fs.readFileSync(protectedPath);
+        res.set({
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename=resume-${id}.pdf`
+        });
 
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename=resume-${id}.pdf`
-    });
+        res.send(file);
 
-    res.send(file);
-
-    fs.unlinkSync(filePath);
-    fs.unlinkSync(protectedPath);
-  }
-);
+        fs.unlinkSync(filePath);
+        fs.unlinkSync(protectedPath);
+      }
+    );
 
   } catch (err) {
     console.error(err);
