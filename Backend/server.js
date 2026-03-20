@@ -10,7 +10,7 @@ const app = express();
 
 // ⚡ CORS configuration for your frontend
 app.use(cors({
-    origin: "http://localhost:5173", // frontend URL
+    origin: "https://resume-builder-sand-two.vercel.app", // frontend URL
     credentials: true // allow cookies/auth headers
 }));
 
