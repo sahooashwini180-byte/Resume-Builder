@@ -22,7 +22,7 @@ export default function AdminDashboard() {
   const fetchResumes = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/resumes/admin/all");
+      const res = await axios.get("https://resume-builder-c1tz.onrender.com/api/resumes/admin/all");
       setResumes(res.data);
     } catch (err) {
       console.error(err);
@@ -33,7 +33,7 @@ export default function AdminDashboard() {
 
   const fetchFeatures = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/feature");
+      const res = await axios.get("https://resume-builder-c1tz.onrender.com/api/feature");
       setFeatures(res.data);
     } catch (err) {
       console.error(err);
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
     if (!window.confirm("Delete this resume?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/resumes/admin/${id}`);
+      await axios.delete(`https://resume-builder-c1tz.onrender.com/api/resumes/admin/${id}`);
       fetchResumes();
       setModalOpen(false);
     } catch (err) {
@@ -57,7 +57,7 @@ export default function AdminDashboard() {
     setFeatures(updated);
 
     try {
-      await axios.post("http://localhost:5000/api/feature", updated);
+      await axios.post("https://resume-builder-c1tz.onrender.com/api/feature", updated);
     } catch (err) {
       console.error(err);
     }
